@@ -1,0 +1,32 @@
+<div class="row-fluid">
+
+    <div class="span10">
+        <h4 class="widgettitle nomargin shadowed">
+            {% if interno %}{{ interno.name }}{% else %}Crea Interno{% endif %}</h4>
+
+        <div class="widgetcontent bordered shadowed nopadding">
+            <form class="stdform stdform2" method="post" action="{% url 'fullcalendar:event-create' %}">{% csrf_token %}
+                <p>{{ form.non_field_errors }}</p>
+                {% for field in form %}
+                    <p>{{ field.errors }}
+                        <label>{{ field.label_tag }}</label>
+                        <span class="field">{{ field }}</span>
+                    </p>
+                {% endfor %}
+                <p class="stdformbutton">
+                    <button id="btn-salva" class="btn btn-primary">Salva</button>
+                </p>
+            </form>
+        </div>
+    </div>
+    <!--span10-->
+
+    <div class="span2">
+    </div>
+    <!--span2-->
+
+</div><!--row-fluid-->
+
+
+
+{% include 'fullcalendar/scripts/event_create.html' %}

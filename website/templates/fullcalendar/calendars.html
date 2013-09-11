@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load sekizai_tags  %}
+
+
+{% block body %}
+    <div class="row">
+
+        <div class="span2">
+            <h4>calendars
+            (<a id="new_calendar_link" href="{# url calendar_create #}">add</a>)
+            </h4>
+            <ul>
+                {% for cal in calendars %}
+                    <li style="background-color: {{ cal.get_color_display }} ">
+                        <input class="calActivator" type="checkbox" value="{{ cal.slug }}" checked="checked"/>{{ cal }}
+                    </li>
+                {% empty %}
+                    <li>no calendars</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="span8">
+            <div id="calendar"></div>
+        </div>
+
+        <div class="span2">
+            {% for occ in occurences %}
+                todo
+            {% endfor %}
+        </div>
+
+    </div>
+{% endblock %}
+
+{% block extrascript %}
+{% addtoblock "js" %}
+    {% include 'fullcalendar/scripts/calendar.html' %}
+{% endaddtoblock %}
+{% endblock %}

@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+{% load scheduletags %}
+{% load i18n %}
+
+{% block htmlheader %}
+    <script type='text/javascript'>
+        $(document).ready(function () {
+            {% for cal in calendars %}
+                {{cal.slug}}_events_source = {
+                    events: function (start, end, callback) {
+                        $.ajax({
+                            url: '{% url month_calendar_json cal.slug%}',
+                            dataType: 'json',
+                            data: {
+                                start: Math.round(start.getTime()),
+                                end: Math.round(end.getTime()),
+                            },
+                            success: function (doc) {
+                                var events = [];
+                                for (var i = 0; i < doc.length; i++) {
+                                    $('#calendar').fullCalendar('removeEvents', doc[i].id);
+                                    events.push({
+                                        id: doc[i].id,
+                                        title: doc[i].title,
+                                        start: doc[i].start,
+                                        end: doc[i].end,
+                                        allDay: doc[i].allDay,
+                                        backgroundColor: doc[i].cancelled ? "grey" : "{{cal.get_color_display}}",
+                                        event_options: doc[i].event_options,
+                                    });
+                                }
+                                callback(events);
+                                $.ajax({
+                                    url: '{% url month_calendar_html cal.slug%}',
+                                    dataType: 'html',
+                                    data: {
+                                        start: Math.round(start.getTime()),
+                                        end: Math.round(end.getTime()),
+                                    },
+                                    success: function (doc) {
+                                        $('.{{cal.slug}}_event').remove();
+                                        $("#allEvents").append(doc);
+                                    }
+                                });
+                            }
+                        });
+                    },
+                    color: '{{cal.get_color_display}}',
+                    textColor: 'black',
+                    error: function () {
+                        alert('there was an error while fetching events!');
+                    }
+                };
+            {% endfor %}
+
+            var date = new Date();
+            var d = date.getDate();
+            var m = date.getMonth();
+            var y = date.getFullYear();
+
+            $('#calendar').fullCalendar({
+                timeFormat: 'H(:mm)',
+                firstDay: 1,//monday
+                weekMode: 'variable',
+                year: {{date.year}},
+                month: {{date.month}}-1,
+                header: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'month,agendaWeek,agendaDay'
+                },
+                editable: true,
+                selectable: true, //Allows a user to highlight multiple days or timeslots by clicking and dragging.
+                selectHelper: true,
+                viewDisplay: function (view) {
+                    $('#calendar').fullCalendar('refetchEvents');
+                },
+                select: function (startDate, endDate, allDay, jsEvent, view) {
+                    if (view.name = 'month') {
+                        startDate.setHours(12);
+                        startDate.setMinutes(00);
+                        endDate.setHours(12);
+                        endDate.setMinutes(30);
+                    }
+                    var start = Math.round(startDate.getTime());
+                    var end = Math.round(endDate.getTime());
+                    var url = '{% url calendar_create_event %}?start=' + start
+                    if (start != end) {
+                        url += '&end=' + end
+                    }
+                    jQuery.facebox({ ajax: url })
+                },
+                eventClick: function (event, element) {
+                    var currentEvent = $(element.currentTarget);
+                    var options = $(event.event_options);
+                    currentEvent.find(".actions").remove();
+                    options.css('background-color', 'white');
+                    currentEvent.find(".fc-event-inner").append(options);
+                    currentEvent.mouseleave(function () {
+                        options.remove();
+                    });
+                },
+                eventDrop: function (event, dayDelta, minuteDelta) {
+                    $.get("{% url ajax_move_or_resize %}",
+                            {id: event.id,
+                                dayDelta: dayDelta,
+                                minuteDelta: minuteDelta},
+                            function (data) {
+                                if (data.status == "FUZZY") {
+                                    openMoveResizeDialog(data.move_or_resize_url);
+                                }
+                                else {
+                                    $('#calendar').fullCalendar('refetchEvents');
+                                }
+                            },
+                            "json");
+                },
+                eventResize: function (event, dayDelta, minuteDelta) {
+                    $.get("{% url ajax_move_or_resize %}",
+                            {id: event.id,
+                                dayDelta: dayDelta,
+                                minuteDelta: minuteDelta,
+                                resize: true},
+                            function (data) {
+                                if (data.status == "FUZZY") {
+                                    openMoveResizeDialog(data.move_or_resize_url);
+                                }
+                                else {
+                                    $('#calendar').fullCalendar('refetchEvents');
+                                }
+                            },
+                            "json");
+                },
+                eventSources: [
+                    {% for cal in calendars %}
+                        {{cal.slug}}_events_source,
+                    {% endfor %}
+                ],
+            });
+
+            $(".calActivator").change(function () {
+                $('.' + $(this).val() + '_event').remove();
+                if ($(this).is(':checked')) {
+                    $('#calendar').fullCalendar('addEventSource', eval($(this).val() + "_events_source"));
+                }
+                else {
+                    $('#calendar').fullCalendar('removeEventSource', eval($(this).val() + "_events_source"));
+                }
+            });
+
+            $("div#events_panel").css('height', $("div#calendar").height());
+
+            $("a#new_event_link").facebox({
+                loadingImage: '{{MEDIA_URL}}/css/facebox/closelabel.png',
+                closeImage: '{{MEDIA_URL}}/css/facebox/closelabel.png',
+            });
+
+            $("a#new_calendar_link").facebox({
+                loadingImage: '{{MEDIA_URL}}/css/facebox/closelabel.png',
+                closeImage: '{{MEDIA_URL}}/css/facebox/closelabel.png',
+            });
+
+            $(document).bind('afterClose.facebox', function () {
+                $('#calendar').fullCalendar('refetchEvents');
+            });
+
+            $("#create_event_link").click(function () {
+                var url = $(this).attr("href");
+                $.facebox({ajax: url});
+                return false;
+            })
+        });
+    </script>
+    {% include "schedule/_dialogs.html" %}
+    <style>
+        {% for cal in calendars %}
+            div.{{cal.slug}}_event {
+                border-color: {{cal.get_color_display}};
+            }
+        {% endfor %}
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div id="info_panel" class="grid_2 alpha">
+        <h4>{% trans 'calendar'|capfirst %}{{ calendars.count|pluralize }}
+            (<a id="new_calendar_link" href="{% url calendar_create %}">
+                <img src="{{ MEDIA_URL }}/schedule/img/add.png" alt="{% trans 'add a calendar'|capfirst %}"/>
+            </a>)
+        </h4>
+        <ul>
+            {% for cal in calendars %}
+                <li style="background-color: {{ cal.get_color_display }} ">
+                    <input class="calActivator" type="checkbox" value="{{ cal.slug }}"
+                           checked="checked"/>{{ cal }}
+                </li>
+            {% empty %}
+                <li>{% trans 'no calendar'|capfirst %}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div id="calendar_panel" class="grid_11">
+        <div id="calendar">
+        </div>
+    </div>
+    <div id="events_panel" class="grid_3 omega" style="overflow:auto;">
+        <h4>{% trans 'event'|capfirst %}{{ occurences.count|pluralize }}
+            (<a id="create_event_link" href="{% url calendar_create_event %}">
+                <img src="{{ MEDIA_URL }}/schedule/img/add.png" alt="{% trans 'add an event'|capfirst %}"/>
+            </a>)
+        </h4>
+
+        <div id="allEvents">
+        </div>
+    </div>
+{% endblock %}

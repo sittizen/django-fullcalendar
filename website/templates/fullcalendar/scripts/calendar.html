@@ -1,0 +1,67 @@
+<script type='text/javascript'>
+
+    $(document).ready(function () {
+
+        var date = new Date();
+        var d = date.getDate();
+        var m = date.getMonth();
+        var y = date.getFullYear();
+
+        $('#calendar').fullCalendar({
+            timeFormat: 'H(:mm)',
+            firstDay: 1,//monday
+            weekMode: 'variable',
+            year: {{ date.year }},
+            month: {{ date.month }}-1,
+            header: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'month,agendaWeek,agendaDay'
+            },
+            editable: true,
+            selectable: true, //Allows a user to highlight multiple days or timeslots by clicking and dragging.
+            selectHelper: true,
+
+            viewDisplay: function (view) {
+                $('#calendar').fullCalendar('refetchEvents');
+            },
+
+            eventSources: [
+                {% for cal in calendars %}
+                {
+                    url: '{% url 'fullcalendar:event-source' %}',
+                    type: 'POST',
+                    data: {
+                        calendar_slug: '{{ cal.slug }}'
+                    },
+                    color: '{{ cal.get_color_display }}'
+                }{% if forloop.last %}{% else %},{% endif %}
+                {% endfor %}
+            ],
+
+            select: function (startDate, endDate, allDay, jsEvent, view) {
+                if (view.name = 'month') {
+                    startDate.setHours(12);
+                    startDate.setMinutes(00);
+                    endDate.setHours(12);
+                    endDate.setMinutes(30);
+                }
+                var start = Math.round(startDate.getTime());
+                var end = Math.round(endDate.getTime());
+                var url = '{% url 'fullcalendar:event-create' %}';
+                $.facebox(function(){
+                    $.get(
+                            "{% url 'fullcalendar:event-create' %}",
+                            {},
+                            function (data, textStatus, jqXHR) {
+                                $.facebox(data);
+                            },
+                            'html'
+                    );
+                });
+            }
+
+        });
+    });
+
+</script>
