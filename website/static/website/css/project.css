@@ -1,1 +1,9 @@
 /*! project specific CSS goes here. */
+.draggable-calendar { /* try to mimick the look of a real event */
+		margin: 10px 0;
+		padding: 2px 4px;
+		color: #fff;
+		font-size: .85em;
+		cursor: pointer;
+		}
+

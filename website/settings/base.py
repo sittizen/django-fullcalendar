@@ -204,6 +204,7 @@ DJANGO_APPS = (
     # 'django.contrib.humanize',
 
     'schedule',
+    'inplaceeditform',
 
     # Admin panel and documentation:
     'django.contrib.admin',

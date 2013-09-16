@@ -9,9 +9,9 @@
             <h4>calendars
             (<a id="new_calendar_link" href="{# url calendar_create #}">add</a>)
             </h4>
-            <ul>
+            <ul class="draggable-calendars">
                 {% for cal in calendars %}
-                    <li style="background-color: {{ cal.get_color_display }} ">
+                    <li style="background-color: {{ cal.get_color_display }}" class="draggable-calendar" data-id={{ cal.pk }}>
                         <input class="calActivator" type="checkbox" value="{{ cal.slug }}" checked="checked"/>{{ cal }}
                     </li>
                 {% empty %}
@@ -25,9 +25,6 @@
         </div>
 
         <div class="span2">
-            {% for occ in occurences %}
-                todo
-            {% endfor %}
         </div>
 
     </div>

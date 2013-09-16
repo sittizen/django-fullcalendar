@@ -7,4 +7,4 @@ from django.views.generic import TemplateView, RedirectView
 
 
 class HomepageView(RedirectView):
-    url = reverse_lazy('fullcalendar:calendar-by-periods')
+    url = reverse_lazy('fullcalendar:calendars')

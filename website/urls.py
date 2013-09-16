@@ -12,6 +12,8 @@ urlpatterns = patterns('',
 
     url(r'^$', HomepageView.as_view(), name='homepage'),
 
+    url(r'^inplaceeditform/', include('inplaceeditform.urls')),
+
     url(r'^fullcalendar/', include('apps.fullcalendar.urls', namespace='fullcalendar', app_name='fullcalendar')),
 )
 

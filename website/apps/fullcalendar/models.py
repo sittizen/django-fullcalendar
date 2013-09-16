@@ -5,12 +5,15 @@ from schedule.models import Event
 from schedule.models.calendars import Calendar
 
 COLOR_TYPE = ( #todo color codes blendig with bootstrap
-    ('blue', '#1EB2DE'),
-    ('red', '#EF4023'),
-    ('yellow' , '#FFD52F'),
+    ('primary', '#285e8e'),
+    ('success', '#398439'),
+    ('info', '#269abc'),
+    ('warning', '#d58512'),
+    ('danger', '#ac2925'),
+
 )
 class FullCalendar(Calendar):
-    color = models.CharField(max_length=6, choices=COLOR_TYPE)
+    color = models.CharField(max_length=7, choices=COLOR_TYPE)
     nb_slot = models.PositiveIntegerField()
 
 class FullCalendarEvent(Event):

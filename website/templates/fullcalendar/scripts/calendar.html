@@ -7,6 +7,11 @@
         var m = date.getMonth();
         var y = date.getFullYear();
 
+        $( ".draggable-calendars .draggable-calendar" ).draggable({
+            appendTo: "#calendar",
+            helper: "clone"
+        });
+
         $('#calendar').fullCalendar({
             timeFormat: 'H(:mm)',
             firstDay: 1,//monday
@@ -19,6 +24,7 @@
                 right: 'month,agendaWeek,agendaDay'
             },
             editable: true,
+            droppable: true,
             selectable: true, //Allows a user to highlight multiple days or timeslots by clicking and dragging.
             selectHelper: true,
 
@@ -46,13 +52,83 @@
                     endDate.setHours(12);
                     endDate.setMinutes(30);
                 }
-                var start = Math.round(startDate.getTime());
-                var end = Math.round(endDate.getTime());
+                var start = Math.round(startDate.getTime() / 1000);
+                var end = Math.round(endDate.getTime() / 1000);
                 var url = '{% url 'fullcalendar:event-create' %}';
                 $.facebox(function(){
                     $.get(
                             "{% url 'fullcalendar:event-create' %}",
+                            {
+                                'start': start,
+                                'end': end
+                            },
+                            function (data, textStatus, jqXHR) {
+                                $.facebox(data);
+                            },
+                            'html'
+                    );
+                });
+            },
+
+            drop: function(date, allDay) {
+                console.log("dropped");
+                var calendar_pk = $(this).attr('data-id');
+                var start = Math.round(date.getTime() / 1000);
+                var end = Math.round(date.getTime() / 1000);
+                var url = '{% url 'fullcalendar:event-create' %}';
+                $.facebox(function(){
+                    $.get(
+                            "{% url 'fullcalendar:event-create' %}",
+                            {
+                                'calendar': calendar_pk,
+                                'start': start,
+                                'end': end
+                            },
+                            function (data, textStatus, jqXHR) {
+                                $.facebox(data);
+                            },
+                            'html'
+                    );
+                });
+            },
+
+            eventClick: function (event, element) {
+                $.facebox(function(){
+                    $.get(
+                            "{% url 'fullcalendar:event-update' 0 %}".replace(0, event['event_id']),
                             {},
+                            function (data, textStatus, jqXHR) {
+                                $.facebox(data);
+                            },
+                            'html'
+                    );
+                });
+            },
+
+            eventDrop: function(event, dayDelta, minuteDelta, allDay, revertFunc, jsEvent, ui, view) {
+                $.facebox(function(){
+                    $.get(
+                            "{% url 'fullcalendar:event-update' 0 %}".replace(0, event['event_id']),
+                            {
+                                'action_type': 'dragged',
+                                'day_delta': dayDelta
+                            },
+                            function (data, textStatus, jqXHR) {
+                                $.facebox(data);
+                            },
+                            'html'
+                    );
+                });
+            },
+
+            eventResize: function( event, dayDelta, minuteDelta, revertFunc, jsEvent, ui, view ) {
+                $.facebox(function(){
+                    $.get(
+                            "{% url 'fullcalendar:event-update' 0 %}".replace(0, event['event_id']),
+                            {
+                                'action_type': 'resized',
+                                'day_delta': dayDelta
+                            },
                             function (data, textStatus, jqXHR) {
                                 $.facebox(data);
                             },

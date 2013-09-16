@@ -9,7 +9,7 @@ from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.html import strip_spaces_between_tags as short
-from django.views.generic import ListView, View, CreateView, FormView
+from django.views.generic import ListView, View, CreateView, FormView, UpdateView, DeleteView
 
 from schedule.periods import Month
 from schedule.utils import coerce_date_dict
@@ -75,15 +75,32 @@ class CalendarsView(ListView):
         else:
             date = timezone.now()
 
-        occurences = []
-        #todo
         ctx.update({
             'now' : datetime.now(),
             'date' : date,
-            'occurences' : occurences
         })
 
         return ctx
+
+class CalendarListView(CsrfExemptMixin, ListView):
+    context_object_name = 'calendars'
+    model = FullCalendar
+    template_name = 'fullcalendar/calendar_list.html'
+
+class CalendarCreateView(CsrfExemptMixin, CreateView):
+    context_object_name = 'calendar'
+    model = FullCalendar
+    template_name = 'fullcalendar/calendar_detail.html'
+
+class CalendarUpdateView(CsrfExemptMixin, UpdateView):
+    context_object_name = 'calendar'
+    model = FullCalendar
+    template_name = 'fullcalendar/calendar_detail.html'
+
+class CalendarDeleteView(CsrfExemptMixin, DeleteView):
+    context_object_name = 'calendar'
+    model = FullCalendar
+    template_name = 'fullcalendar/calendar_detail.html'
 
 
 class EventSourceView(CsrfExemptMixin, AjaxResponseMixin, JSONResponseMixin, View):
@@ -96,6 +113,7 @@ class EventSourceView(CsrfExemptMixin, AjaxResponseMixin, JSONResponseMixin, Vie
                 for occurence in  event.get_occurrences(start, end):
                     event_list.append({
                         'id': _encode_occurrence(occurence),
+                        'event_id': event.pk,
                         'title': occurence.title,
                         'start': occurence.start.isoformat(),
                         'end': occurence.end.isoformat(),
@@ -115,8 +133,43 @@ class EventCreateView(CsrfExemptMixin, CreateView):
     context_object_name = 'event'
     form_class = FullCalendarEventForm
     model = FullCalendarEvent
-    template_name = 'fullcalendar/event_create.html'
+    template_name = 'fullcalendar/event_detail.html'
     success_url = reverse_lazy('fullcalendar:calendars')
+
+    def get_initial(self):
+        initial = self.initial.copy()
+        if self.request.method == 'GET':
+            if self.request.GET.has_key('calendar'):
+                initial['calendar'] = self.request.GET['calendar']
+            tz = timezone.get_default_timezone()
+            initial['start'] = datetime.fromtimestamp(int(self.request.GET['start']), tz=tz)
+            initial['end'] = datetime.fromtimestamp(int(self.request.GET['end']), tz=tz)
+        return initial
+
+class EventUpdateView(CsrfExemptMixin, UpdateView):
+    context_object_name = 'event'
+    form_class = FullCalendarEventForm
+    model = FullCalendarEvent
+    template_name = 'fullcalendar/event_detail.html'
+    success_url = reverse_lazy('fullcalendar:calendars')
+
+    def get_object(self, queryset=None):
+        obj = super(EventUpdateView, self).get_object(queryset)
+        if self.request.method == 'GET':
+            day_delta = int(self.request.GET.get('day_delta', 0))
+            if self.request.GET.get('action_type', 'clicked') == 'dragged':
+                obj.start = obj.start + timedelta(days=day_delta)
+            obj.end = obj.end + timedelta(days=day_delta)
+        return obj
+
+class EventDeleteView(CsrfExemptMixin, DeleteView):
+    context_object_name = 'event'
+    model = FullCalendarEvent
+    template_name = 'fullcalendar/event_delete.html'
+    success_url = reverse_lazy('fullcalendar:calendars')
+
+
+
 
 #
 # @login_required(login_url='/login/')

@@ -2,10 +2,10 @@
 
     <div class="span10">
         <h4 class="widgettitle nomargin shadowed">
-            {% if interno %}{{ interno.name }}{% else %}Crea Interno{% endif %}</h4>
+            {% if event %}{{ event.title }}{% else %}Crea Evento{% endif %}</h4>
 
         <div class="widgetcontent bordered shadowed nopadding">
-            <form class="stdform stdform2" method="post" action="{% url 'fullcalendar:event-create' %}">{% csrf_token %}
+            <form class="stdform stdform2" method="post" action="{% if event %}{% url 'fullcalendar:event-update' event.pk %}{% else %}{% url 'fullcalendar:event-create' %}{% endif %}">{% csrf_token %}
                 <p>{{ form.non_field_errors }}</p>
                 {% for field in form %}
                     <p>{{ field.errors }}
@@ -29,4 +29,4 @@
 
 
 
-{% include 'fullcalendar/scripts/event_create.html' %}
+{% include 'fullcalendar/scripts/event_detail.html' %}

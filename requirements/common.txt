@@ -27,3 +27,5 @@ psycopg2==2.5
 # llazzaro / django-scheduler , calendaring app for Django
 pytz>=2013b
 -e git+https://github.com/llazzaro/django-scheduler.git#egg=django-scheduler
+
+django-inplaceedit>=1.2,<1.3

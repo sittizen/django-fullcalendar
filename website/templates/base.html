@@ -1,4 +1,4 @@
-{% load sekizai_tags staticfiles %}
+{% load sekizai_tags staticfiles inplace_edit %}
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -33,6 +33,7 @@
         <script src="{% static 'bower/fullcalendar/fullcalendar.js' %}" type="text/javascript"></script>
         <script src="{% static 'website/js/facebox.js' %}" type="text/javascript"></script>
         <script src="{% static 'website/js/jquery.ui.timepicker.js' %}" type="text/javascript"></script>
+        {% inplace_static %}
         <script src="{% static 'website/js/project.js' %}" type="text/javascript"></script>
     {% endaddtoblock %}
 
