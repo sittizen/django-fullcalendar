@@ -7,3 +7,8 @@
 		cursor: pointer;
 		}
 
+.fc-event-delete {
+    color: #ffffff;
+    position: absolute;
+    right: 10px;
+}

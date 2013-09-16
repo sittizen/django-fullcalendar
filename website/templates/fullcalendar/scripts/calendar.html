@@ -45,6 +45,12 @@
                 {% endfor %}
             ],
 
+            eventRender: function(event, element) {
+                var del_url = "{% url 'fullcalendar:event-delete' 0 %}".replace(0, event['event_id']);
+                element.children(".fc-event-inner").append("<span><a class=\"fc-event-delete\" href=\""+del_url+"\">X</a></span>");
+
+            },
+
             select: function (startDate, endDate, allDay, jsEvent, view) {
                 if (view.name = 'month') {
                     startDate.setHours(12);

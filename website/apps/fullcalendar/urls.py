@@ -17,6 +17,6 @@ urlpatterns = patterns('',
     url(r'^event-source/$', EventSourceView.as_view(), name='event-source'),
     url(r'^event-create/$', EventCreateView.as_view(), name='event-create'),
     url(r'^event-update/(?P<pk>\d+)/$', EventUpdateView.as_view(), name='event-update'),
-    url(r'^event-delete/$', EventDeleteView.as_view(), name='event-delete'),
+    url(r'^event-delete/(?P<pk>\d+)/$', EventDeleteView.as_view(), name='event-delete'),
 
 )

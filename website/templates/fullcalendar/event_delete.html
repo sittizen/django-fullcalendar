@@ -1,0 +1,23 @@
+<div class="row-fluid">
+
+    <div class="span10">
+        <h4 class="widgettitle nomargin shadowed">{{ event.title }}</h4>
+        <div class="widgetcontent bordered shadowed nopadding">
+            <form class="stdform stdform2" method="post" action=".">{% csrf_token %}
+                <p class="stdformbutton">
+                    <button class="btn btn-primary">Conferma</button>
+                </p>
+            </form>
+        </div>
+    </div>
+    <!--span10-->
+
+    <div class="span2">
+    </div>
+    <!--span2-->
+
+</div><!--row-fluid-->
+
+
+
+{% include 'fullcalendar/scripts/event_detail.html' %}
